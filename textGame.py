@@ -30,14 +30,33 @@ class Npc(Person):
 
     def activate(self, playerItem):
         gainedItems = []
+        success = False
         if playerItem in self.activateItems:
             print(self.rewardDialog[self.rewardDialogCounter])
+            success = True
             for item in self.rewards:
                 answer = input('Do you want ' + item.name + '?: ')
                 if answer == 'y':
                     self.rewards.remove(item)
                     gainedItems.append(item)
-        return gainedItems 
+        return gainedItems, success 
+
+class MovingNpc(Npc):
+    def __init__(self, name, dialog, startingLoc = [], movementPattern=[], movement=1, wealth=0, gifts = [], activateItems=[], rewards = [], rewardDialog = []) :
+        Npc.__init__(self, name, dialog ,movement, wealth, gifts, activateItems, rewards, rewardDialog)
+        self.movementPattern = movementPattern
+        self.movementCounter = 0
+        self.x = startingLoc[0]
+        self.y = startingLoc[1]
+
+    def nextCommand(self):
+        command = self.movementPattern[self.movementCounter]
+        if self.movementCounter == len(self.movementPattern)-1:
+            self.movementCounter = 0
+        else:
+            self.movementCounter += 1
+        return command
+
 
 class Object:
     def __init__(self, name, activateItems=[], heldItems=[]):
@@ -47,13 +66,16 @@ class Object:
 
     def activate(self, playerItem):
         gainedItems = []
+        success = False
         if playerItem in self.activateItems:
+            success = True
             for item in self.heldItems:
+                success = True
                 answer = input('Do you want ' + item.name + '?: ')
                 if answer == 'y':
                     self.heldItems.remove(item)
                     gainedItems.append(item)
-        return gainedItems 
+        return gainedItems, success
 
 
 class Player(Person):
@@ -86,12 +108,13 @@ class Note(Item):
         print(self.text)
 
 class Square():
-    def __init__(self, location, description, items=[], occupants=[], objects=[]):
+    def __init__(self, location, description, items=[], occupants=[], objects=[], barriers = ''):
         self.location = location
         self.items = items
         self.description = description
         self.occupants = occupants
         self.objects = objects
+        self.barriers = barriers 
     
     def removeItem(self, item):
         self.items.remove(item)
@@ -101,31 +124,85 @@ class Square():
         
     def addOccupants(self, person):
         self.occupants.append(person)
+
+    def checkBarrier(self, direction, isPlayer):
+        if direction in self.barriers:
+            if isPlayer:    
+                print('Something is blocking your way.')
+            return False
+        else:
+            return True
+
         
 class Terrain:
     def __init__(self, xSize, ySize):
-        self.squares = [[Square([x,y],'You get the feeling you\'ve gone too far...',[]) for y in range(ySize)] for x in range(xSize)] 
+        self.squares = [[Square([x,y],'You get the feeling you\'ve gone too far...',barriers='') for y in range(ySize)] for x in range(xSize)]
+        for square in self.squares[1]:
+            square.barriers += 'w'
+        for square in self.squares[xSize-1]:
+            square.barriers += 'e'
+        for square_array in self.squares:
+            square_array[0].barriers += 'n'
+            square_array[ySize-1].barriers += 's'
         
+        self.xSize = xSize
+        self.ySize = ySize
+
     def addSquare(self, square):
         self.squares[square.location[0]][square.location[1]] = square 
-        
+
+    def shareBarriers(self):
+        for square_array in self.squares:
+            for square in square_array:
+                if (self.xSize-1 > square.location[0] > 0) and (self.ySize-1 > square.location[1] > 0):
+                    if 'e' in square.barriers:
+                        self.squares[square.location[0]+1][square.location[1]].barriers += 'w'
+                    if 'w' in square.barriers:
+                        self.squares[square.location[0]-1][square.location[1]].barriers += 'e'
+                    if 'n' in square.barriers:
+                        self.squares[square.location[0]][square.location[1]-1].barriers +='s'
+                    if 's' in square.barriers:
+                        self.squares[square.location[0]][square.location[1]+1].barriers += 'n'
+          
 class Turn():
-    def __init__(self, player, terrain):
+    def __init__(self, player, terrain, smartNpcs=[]):
         self.player = player
         self.terrain = terrain
         self.square = terrain.squares[player.x][player.y]
         self.newRoom = True
         self.playGame = True
+        self.smartNpcs = smartNpcs
 
-    def command(self, action):
-        if action=='n':
-            self.player.y = self.player.y-1
-        elif action =='s':
-            self.player.y = self.player.y+1
-        elif action == 'e':
-            self.player.x = self.player.x+1
-        elif action == 'w':
-            self.player.x = self.player.x-1
+    def addSmartNpc(self, npc):
+        self.smartNpcs.append(npc)
+
+    def command(self, action, actor):
+        # used to check if a movement command went through
+        success = False
+
+        # check if a player is commanding 
+        isPlayer = type(actor) is Player
+
+        # set current sqaure of actor 
+        if not isPlayer:
+            currSquare = self.terrain.squares[actor.x][actor.y]
+        else:
+            currSquare = self.square
+
+        if action in 'nsew':
+            if action=='n' and currSquare.checkBarrier('n', isPlayer):
+                actor.y += -1
+                success = True
+            elif action =='s' and currSquare.checkBarrier('s', isPlayer):
+                actor.y += 1
+                success = True
+            elif action == 'e' and currSquare.checkBarrier('e', isPlayer):
+                actor.x += 1
+                success = True
+            elif action == 'w' and currSquare.checkBarrier('w', isPlayer):
+                actor.x += -1
+                success = True
+    
         elif action == 'no':
             pass
         elif action == 'inv':
@@ -139,17 +216,25 @@ class Turn():
             objectName = action[obLoc:]
             objGainedItems = []
             occGainedItems = []
+            npcGainedItems = []
             for item in self.player.inventory:
                 if itemName == item.name:
                     for curObject in self.square.objects:
                         if curObject.name == objectName:
-                            objGainedItems = curObject.activate(item)
+                            objGainedItems, status = curObject.activate(item)
                     for occupant in self.square.occupants:
                         if occupant.name == objectName:
-                            occGainedItems = occupant.activate(item)
-                            if occGainedItems:
+                            occGainedItems, status = occupant.activate(item)
+                            if status:
                                 self.player.removeItem(item)
-            for gain in objGainedItems + occGainedItems:
+                    for smartNpc in self.smartNpcs:
+                        if smartNpc.name == objectName and self.player.x == smartNpc.x and self.player.y == smartNpc.y:
+                            npcGainedItems, status = smartNpc.activate(item)
+                            if status:
+                                self.player.removeItem(item)
+
+
+            for gain in objGainedItems + occGainedItems + npcGainedItems:
                 self.player.addItem(gain)
 
         elif action[0:3] == 'use':
@@ -166,21 +251,31 @@ class Turn():
                     self.square.removeItem(item)
 
         elif action[0:7] == 'talk to':
-            ncp = action[8:]
+            npc = action[8:]
             for occupant in self.square.occupants:
-                if occupant.name == ncp:
+                if occupant.name == npc:
                     giftedItems = occupant.speak()
                     for item in giftedItems:
                         self.player.addItem(item)
+
+            for smartNpc in self.smartNpcs:
+                if smartNpc.name == npc and self.player.x == smartNpc.x and self.player.y == smartNpc.y:
+                    giftedItems = smartNpc.speak()
+                    for item in giftedItems:
+                        self.player.addItem(item)
+
+            newAction = input('Command: ')
+            success = self.command(newAction, actor)
+
         elif action == 'exit':
             self.playGame = False
-        
-        else:
-            print('not a command')
-        if action in ['n','s','e','w']:
+
+        if success and (type(actor) is Player):
             self.newRoom = True 
-        else:
+        elif type(actor) is Player:
             self.newRoom = False
+
+        return success
 
         
     def nextTurn(self):
@@ -200,11 +295,17 @@ class Turn():
                 print('You see: ')
                 for objects in self.square.objects:
                     print(objects.name)
-        
+
+        for npc in self.smartNpcs:
+            self.command(npc.nextCommand(), npc)
+            #print(npc.x,npc.y)
+            if (self.player.x == npc.x) and (self.player.y == npc.y):
+                print(npc.name, 'passes by.')
+            
         action = input('Command: ')
-        self.command(action)
+        self.command(action, self.player)
         self.square = self.terrain.squares[self.player.x][self.player.y]
-    
+
     def startGame(self):
         while self.playGame:
             self.nextTurn()

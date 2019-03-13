@@ -18,7 +18,7 @@ dirtPatch = Square([1,2], 'This small mud puddle is not the best place to hang o
 
 CrowsBottomCenter = Square([2,2], 'Looking around, Crow\'s Bottom leaves something to be desired... But who knows if there\'s even anything better out there? YOU\'VE certainly never been. The Alabaster house sits, unimpressively, to the North.' )
 
-house = Square([1,3], 'You are in the small wooden box that you call home. It isn\'t much, but it keeps you dry. \nThere is a door on the east wall.')
+house = Square([1,3], 'You are in the small wooden box that you call home. It isn\'t much, but it keeps you dry. \nThere is a door on the east wall.', barriers='nws')
 
 post = Note('Crows Bottom Flyer',1,0,'''
 ATTENTION! HELP!
@@ -57,9 +57,9 @@ shore = Square([2,6], 'A sandy shore talstretches almost up to the treeline. A g
 
 grassyKnoll = Square([3,3], 'You are on a dirt path cutting through a pleasant meadow. You can make out some sort of structure to the East, and a thick treeline to the South.')
 
-guard = Npc('Guard', ['He bellows. \"What business could YOU have with the royal guard?? A shovel? You should have just said so. I think I left one laying around in the forest somewhere.\"'])
+guard = MovingNpc('Guard', ['He bellows. \"What business could YOU have with the royal guard?? A shovel? You should have just said so. I think I left one laying around in the forest somewhere.\"'],[4,3], 'ns')
 
-guardPost = Square([4,3], 'There are two menacing, fully-armored, mean guards. I guess you don\'t KNOW they\'re mean. But... I mean, they\'re guards.', occupants=[guard])
+guardPost = Square([4,3], 'There are two menacing, fully-armored, mean guards. I guess you don\'t KNOW they\'re mean. But... I mean, they\'re guards.', occupants=[])
 
 
 world.addSquare(AlabasterHouse)
@@ -76,6 +76,8 @@ world.addSquare(forest6)
 world.addSquare(shore)
 world.addSquare(grassyKnoll)
 world.addSquare(guardPost)
+world.shareBarriers()
 
 game = Turn(player, world)
+game.addSmartNpc(guard)
 game.startGame()
