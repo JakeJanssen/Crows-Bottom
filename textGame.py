@@ -99,8 +99,7 @@ class Square():
         self.occupants.append(person)
         
 class Terrain:
-    def __init__(self, xSize, ySize, player):
-        self.player = player 
+    def __init__(self, xSize, ySize):
         self.squares = [[Square([x,y],'You get the feeling you\'ve gone too far...',[]) for y in range(ySize)] for x in range(xSize)] 
         
     def addSquare(self, square):
