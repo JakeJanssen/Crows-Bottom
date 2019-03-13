@@ -1,9 +1,9 @@
 from textGame import *
 
-player = Player('Collin')
+player = Player('Colin')
 
 # init terrain
-world = Terrain(8,7,player)
+world = Terrain(8,7)
 
 
 gold = Item('gold', 5, 0)
