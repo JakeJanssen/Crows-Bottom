@@ -78,6 +78,4 @@ world.addSquare(grassyKnoll)
 world.addSquare(guardPost)
 
 game = Turn(player, world)
-
-while True:
-    game.nextTurn()
+game.startGame()

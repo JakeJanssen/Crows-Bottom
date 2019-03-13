@@ -5,6 +5,7 @@ class Person:
         self.wealth = wealth
         self.inventory = inventory
 
+
 class Npc(Person):
     def __init__(self, name, dialog ,movement=1, wealth=0, gifts = [], activateItems=[], rewards = [], rewardDialog = []) :
         Person.__init__(self, name, movement, wealth)
@@ -63,6 +64,10 @@ class Player(Person):
         
     def addItem(self,item):
         self.inventory.append(item)
+
+    def removeItem(self, item):
+        self.inventory.remove(item)
+        
                 
 class Item:
     def __init__(self, name, quantity, weight):
@@ -79,8 +84,7 @@ class Note(Item):
         
     def use(self):
         print(self.text)
-        
-        
+
 class Square():
     def __init__(self, location, description, items=[], occupants=[], objects=[]):
         self.location = location
@@ -111,6 +115,7 @@ class Turn():
         self.terrain = terrain
         self.square = terrain.squares[player.x][player.y]
         self.newRoom = True
+        self.playGame = True
 
     def command(self, action):
         if action=='n':
@@ -128,21 +133,23 @@ class Turn():
                 print(item.name)
         elif action == 'loc':
             print(self.player.x, self.player.y)
-
         elif 'use ' in action and ' on ' in action:
             itemName = action[4:action.find(' on ')]
             obLoc = action.find(' on ') + 4
             objectName = action[obLoc:]
-            gainedItems = []
+            objGainedItems = []
+            occGainedItems = []
             for item in self.player.inventory:
                 if itemName == item.name:
                     for curObject in self.square.objects:
                         if curObject.name == objectName:
-                            gainedItems = curObject.activate(item)
+                            objGainedItems = curObject.activate(item)
                     for occupant in self.square.occupants:
                         if occupant.name == objectName:
-                            gainedItems = occupant.activate(item)
-            for gain in gainedItems:
+                            occGainedItems = occupant.activate(item)
+                            if occGainedItems:
+                                self.player.removeItem(item)
+            for gain in objGainedItems + occGainedItems:
                 self.player.addItem(gain)
 
         elif action[0:3] == 'use':
@@ -165,6 +172,8 @@ class Turn():
                     giftedItems = occupant.speak()
                     for item in giftedItems:
                         self.player.addItem(item)
+        elif action == 'exit':
+            self.playGame = False
         
         else:
             print('not a command')
@@ -195,3 +204,7 @@ class Turn():
         action = input('Command: ')
         self.command(action)
         self.square = self.terrain.squares[self.player.x][self.player.y]
+    
+    def startGame(self):
+        while self.playGame:
+            self.nextTurn()
