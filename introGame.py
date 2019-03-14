@@ -3,7 +3,7 @@ from textGame import *
 player = Player('Colin')
 
 # init terrain
-world = Terrain(8,7)
+world = Terrain(9,8)
 
 
 gold = Item('gold', 5, 0)
