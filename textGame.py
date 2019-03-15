@@ -137,7 +137,7 @@ class Square():
 class Terrain:
     def __init__(self, xSize, ySize):
         self.squares = [[Square([x,y],'You get the feeling you\'ve gone too far...',barriers='') for y in range(ySize)] for x in range(xSize)]
-        for square in self.squares[1]:
+        for square in self.squares[0]:
             square.barriers += 'w'
         for square in self.squares[xSize-1]:
             square.barriers += 'e'
