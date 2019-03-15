@@ -1,9 +1,10 @@
 class Person:
-    def __init__(self, name, movement, wealth, inventory = []):
+    def __init__(self, name, movement, wealth, inventory = [], alive=True):
         self.name = name
         self.movement = movement
         self.wealth = wealth
         self.inventory = inventory
+        self.alive=alive
 
 
 class Npc(Person):
@@ -207,7 +208,7 @@ class Turn():
             pass
         elif action == 'inv':
             for item in self.player.inventory:
-                print(item.name)
+                print(item.name,'x',item.quantity)
         elif action == 'loc':
             print(self.player.x, self.player.y)
         elif 'use ' in action and ' on ' in action:
@@ -245,8 +246,11 @@ class Turn():
                     item.use()
         elif action[0:4] == 'take':
             itemName = action[5:]
+            takeAll = False
+            if itemName == 'all':
+                takeAll = True
             for item in self.square.items:
-                if itemName == item.name:
+                if itemName == item.name or takeAll:
                     self.player.addItem(item)
                     self.square.removeItem(item)
 
