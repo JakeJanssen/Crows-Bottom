@@ -281,9 +281,13 @@ class Turn():
             for occupant in self.square.occupants:
                 if occupant.name == npc:
                     print('Your health: ', self.player.health, ' Opponent\'s health: ', occupant.health)
+                    pid = 0
                     while(self.player.health>0 and occupant.health>0):
-                        occupant.change_health(self.player.damage)
-                        self.player.change_health(occupant.damage)
+                        if (pid % 2):
+                            occupant.change_health(self.player.damage)
+                        else:
+                            self.player.change_health(occupant.damage)
+                        pid += 1
                         print('Your health: ', self.player.health, ' Opponent\'s health: ', occupant.health)
 
                     print('fight is done')
