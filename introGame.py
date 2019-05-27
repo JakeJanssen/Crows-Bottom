@@ -5,7 +5,6 @@ player = Player('Colin')
 # init terrain
 world = Terrain(9,8)
 
-
 gold = Item('gold', 5, 0)
 
 bundle = Item('Carefully Wrapped Package',1,1)
