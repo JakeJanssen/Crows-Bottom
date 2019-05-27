@@ -1,11 +1,12 @@
 class Person:
-    def __init__(self, name, movement, wealth, inventory = [], health=100, damage=10):
+    def __init__(self, name, movement, wealth, inventory = [], health=100, damage=10, defense=0):
         self.name = name
         self.movement = movement
         self.wealth = wealth
         self.inventory = inventory
         self.health = health
         self.damage = damage
+        self.defense = defense
 
     def change_health(self, health_change):
         self.health += health_change
@@ -17,7 +18,7 @@ class Npc(Person):
         self.gifts = gifts
         self.activateItems = activateItems
         self.rewards = rewards
-        self.dialog = dialog 
+        self.dialog = dialog
         self.dialogCounter = 0
         self.rewardDialog = rewardDialog
         self.rewardDialogCounter = 0
@@ -97,6 +98,11 @@ class Weapon(Item):
         Item.__init__(self, name, quanitiy, weight)
         self.damage = damage
 
+class Armour(Item):
+    def __init__(self, name, defense, weight=0, quanitiy=1):
+        Item.__init__(self, name, quanitiy, weight)
+        self.defense = defense
+
 class Note(Item):
     def __init__(self, name, quantity, weight, text):
         Item.__init__(self, name, quantity, weight)
@@ -109,11 +115,14 @@ class Note(Item):
 class Player(Person):
     def __init__(self, name, x=2, y=2):
         Person.__init__(self, name, 1, 100)
-        self.x = x
-        self.y = y
+        self.x = x+1
+        self.y = y+1
         fists = Weapon('fists', 50)
+        clothes = Armour('peasant clothes', 2)
         self.weapons = [fists]
+        self.armours = [clothes]
         self.equipWeapon(fists)
+        self.equipArmour(clothes)
         
     def addItem(self,item):
         self.inventory.append(item)
@@ -122,7 +131,7 @@ class Player(Person):
         self.inventory.remove(item)
 
     def addWeapon(self, weapon):
-        self.weapons = []
+        self.weapons.append(weapon)
 
     def removeWeapon(self, weapon):
         self.weapons.remove(weapon)
@@ -131,6 +140,11 @@ class Player(Person):
         if weapon in self.weapons:
             self.weapon = weapon
             self.damage = weapon.damage
+
+    def equipArmour(self, armour):
+        if armour in self.armours:
+            self.armour = armour
+            self.defense = armour.defense
         
 
 class Square():
@@ -151,6 +165,9 @@ class Square():
     def addOccupants(self, person):
         self.occupants.append(person)
 
+    def removeOccupants(self, person):
+        self.occupants.remove(person)
+
     def checkBarrier(self, direction, isPlayer):
         if direction in self.barriers:
             if isPlayer:    
@@ -162,6 +179,8 @@ class Square():
         
 class Terrain:
     def __init__(self, xSize, ySize):
+        xSize += 2
+        ySize += 2
         self.squares = [[Square([x,y],'You get the feeling you\'ve gone too far...',barriers='') for y in range(ySize)] for x in range(xSize)]
         for square in self.squares[0]:
             square.barriers += 'w'
@@ -175,7 +194,7 @@ class Terrain:
         self.ySize = ySize
 
     def addSquare(self, square):
-        self.squares[square.location[0]][square.location[1]] = square 
+        self.squares[square.location[0]+1][square.location[1]+1] = square 
 
     def shareBarriers(self):
         for square_array in self.squares:
@@ -203,9 +222,10 @@ class Turn():
         self.smartNpcs.append(npc)
 
     def command(self, action, actor):
+        #print(action)
+        #print(action[0:4])
         #action = action.lower()
         # used to check if a movement command went through
-        print(action[0:5])
         success = False
 
         # check if a player is commanding 
@@ -237,7 +257,7 @@ class Turn():
             for item in self.player.inventory:
                 print(item.name,'x',item.quantity)
         elif action == 'loc':
-            print(self.player.x, self.player.y)
+            print(self.player.x-1, self.player.y-1)
         elif 'use ' in action and ' on ' in action:
             itemName = action[4:action.find(' on ')]
             obLoc = action.find(' on ') + 4
@@ -271,14 +291,14 @@ class Turn():
                 if itemName == item.name:
                     item.use()
 
-        elif action[0:5] == 'take':
+        elif action[0:4] == 'take':
             itemName = action[5:]
             takeAll = False
             if itemName == 'all':
                 takeAll = True
             for item in self.square.items:
                 if itemName == item.name or takeAll:
-                    if item.__class__.__name__ == 'Weapon':
+                    if type(item) is Weapon:
                         self.player.addWeapon(item)
                         self.square.removeItem(item)
                     else:
@@ -303,11 +323,11 @@ class Turn():
             success = self.command(newAction, actor)
 
         elif action[0:5] == 'fight':
-            print('you\'re trying to fight')
+            #print('you\'re trying to fight')
             npc = action[6:]
             for occupant in self.square.occupants:
                 if occupant.name == npc:
-                    print('Your health: ', self.player.health, ' Opponent\'s health: ', occupant.health)
+                    #print('Your health: ', self.player.health, ' Opponent\'s health: ', occupant.health)
                     pid = 0
                     while(self.player.health>0 and occupant.health>0):
                         if (pid % 2):
@@ -315,22 +335,47 @@ class Turn():
                         else:
                             occupant.change_health(-1*self.player.damage)
 
-                            
                         pid += 1
-                        print('Your health: ', self.player.health, ' Opponent\'s health: ', occupant.health)
+                        #print('Your health: ', self.player.health, ' Opponent\'s health: ', occupant.health)
 
-                    print('fight is done')
+                    #print('fight is done')
+
+                    if(self.player.health>0):
+                        print(npc, ' has been defeated.')
+                        self.square.removeOccupants(occupant)
+                    else:
+                        print('You have died.')
+                        self.playGame = False
+
+        # thresholds needed here %%%%%%%%%%%%%%%%%%%%%%
+        elif action == 'health':
+            hp = self.player.health
+            if hp >= 90:
+                print('hurt not that bad.')
+            elif hp >= 75:
+                print('definitely feeling something.')
+            else:
+                print('You\'re nearly dead.')
+
 
         elif action == 'weapons':
             print('___Weapons___')
             for weapon in self.player.weapons:
                 print(weapon.name)
 
+        elif action == 'stats':
+            print('___Stats___')
+            print('Weapon: ', self.player.weapon.name ,'Damage: ', self.player.damage)
+            print('Armour: ', self.player.armour.name ,'Defense: ', self.player.defense)
+
         elif action[0:5] == 'equip':
-            weapon_name = action[6:]
+            name = action[6:]
             for weapon in self.player.weapons:
-                if weapon_name == weapon.name:
+                if name == weapon.name:
                     self.player.equipWeapon(weapon)
+            for armour in self.player.armours:
+                if name == armour.name:
+                    self.player.equipArmour(armour)
 
         elif action == 'exit':
             self.playGame = False
