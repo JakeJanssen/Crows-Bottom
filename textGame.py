@@ -12,7 +12,7 @@ class Person:
 
 
 class Npc(Person):
-    def __init__(self, name, dialog ,movement=1, wealth=0, damage=50, gifts = [], activateItems=[], rewards = [], rewardDialog = []) :
+    def __init__(self, name, dialog ,movement=1, wealth=0, damage=10, gifts = [], activateItems=[], rewards = [], rewardDialog = []) :
         Person.__init__(self, name, movement, wealth)
         self.gifts = gifts
         self.activateItems = activateItems
@@ -111,8 +111,9 @@ class Player(Person):
         Person.__init__(self, name, 1, 100)
         self.x = x
         self.y = y
-        self.weapons = []
-        self.weapon = Weapon('fists', 50)
+        fists = Weapon('fists', 50)
+        self.weapons = [fists]
+        self.equipWeapon(fists)
         
     def addItem(self,item):
         self.inventory.append(item)
@@ -127,7 +128,10 @@ class Player(Person):
         self.weapons.remove(weapon)
 
     def equipWeapon(self, weapon):
-        self.weapon = weapon
+        if weapon in self.weapons:
+            self.weapon = weapon
+            self.damage = weapon.damage
+        
 
 class Square():
     def __init__(self, location, description, items=[], occupants=[], objects=[], barriers = ''):
@@ -199,7 +203,9 @@ class Turn():
         self.smartNpcs.append(npc)
 
     def command(self, action, actor):
+        #action = action.lower()
         # used to check if a movement command went through
+        print(action[0:5])
         success = False
 
         # check if a player is commanding 
@@ -264,15 +270,20 @@ class Turn():
             for item in self.player.inventory:
                 if itemName == item.name:
                     item.use()
-        elif action[0:4] == 'take':
+
+        elif action[0:5] == 'take':
             itemName = action[5:]
             takeAll = False
             if itemName == 'all':
                 takeAll = True
             for item in self.square.items:
                 if itemName == item.name or takeAll:
-                    self.player.addItem(item)
-                    self.square.removeItem(item)
+                    if item.__class__.__name__ == 'Weapon':
+                        self.player.addWeapon(item)
+                        self.square.removeItem(item)
+                    else:
+                        self.player.addItem(item)
+                        self.square.removeItem(item)
 
         elif action[0:7] == 'talk to':
             npc = action[8:]
@@ -291,25 +302,41 @@ class Turn():
             newAction = input('Command: ')
             success = self.command(newAction, actor)
 
-        elif action[0:4] == 'fight':
+        elif action[0:5] == 'fight':
             print('you\'re trying to fight')
-            npc = action[5:]
+            npc = action[6:]
             for occupant in self.square.occupants:
                 if occupant.name == npc:
                     print('Your health: ', self.player.health, ' Opponent\'s health: ', occupant.health)
                     pid = 0
                     while(self.player.health>0 and occupant.health>0):
                         if (pid % 2):
-                            occupant.change_health(self.player.damage)
+                            self.player.change_health(-1*occupant.damage)
                         else:
-                            self.player.change_health(occupant.damage)
+                            occupant.change_health(-1*self.player.damage)
+
+                            
                         pid += 1
                         print('Your health: ', self.player.health, ' Opponent\'s health: ', occupant.health)
 
                     print('fight is done')
 
+        elif action == 'weapons':
+            print('___Weapons___')
+            for weapon in self.player.weapons:
+                print(weapon.name)
+
+        elif action[0:5] == 'equip':
+            weapon_name = action[6:]
+            for weapon in self.player.weapons:
+                if weapon_name == weapon.name:
+                    self.player.equipWeapon(weapon)
+
         elif action == 'exit':
             self.playGame = False
+
+        else:
+            print('Invalid Command.')
 
         if success and (type(actor) is Player):
             self.newRoom = True 
