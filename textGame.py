@@ -83,19 +83,6 @@ class Object:
                     gainedItems.append(item)
         return gainedItems, success
 
-
-class Player(Person):
-    def __init__(self, name):
-        Person.__init__(self, name, 1, 100)
-        self.x = 1
-        self.y = 3
-        
-    def addItem(self,item):
-        self.inventory.append(item)
-
-    def removeItem(self, item):
-        self.inventory.remove(item)
-        
                 
 class Item:
     def __init__(self, name, quantity, weight):
@@ -105,6 +92,11 @@ class Item:
     def use(self):
         print('This item has no use at the moment.')
 
+class Weapon(Item):
+    def __init__(self, name, damage, weight=0, quanitiy=1):
+        Item.__init__(self, name, quanitiy, weight)
+        self.damage = damage
+
 class Note(Item):
     def __init__(self, name, quantity, weight, text):
         Item.__init__(self, name, quantity, weight)
@@ -112,6 +104,30 @@ class Note(Item):
         
     def use(self):
         print(self.text)
+
+
+class Player(Person):
+    def __init__(self, name, x=2, y=2):
+        Person.__init__(self, name, 1, 100)
+        self.x = x
+        self.y = y
+        self.weapons = []
+        self.weapon = Weapon('fists', 50)
+        
+    def addItem(self,item):
+        self.inventory.append(item)
+
+    def removeItem(self, item):
+        self.inventory.remove(item)
+
+    def addWeapon(self, weapon):
+        self.weapons = []
+
+    def removeWeapon(self, weapon):
+        self.weapons.remove(weapon)
+
+    def equipWeapon(self, weapon):
+        self.weapon = weapon
 
 class Square():
     def __init__(self, location, description, items=[], occupants=[], objects=[], barriers = ''):
@@ -291,8 +307,6 @@ class Turn():
                         print('Your health: ', self.player.health, ' Opponent\'s health: ', occupant.health)
 
                     print('fight is done')
-
-
 
         elif action == 'exit':
             self.playGame = False
