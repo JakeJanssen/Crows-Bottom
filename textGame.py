@@ -1,14 +1,18 @@
 class Person:
-    def __init__(self, name, movement, wealth, inventory = [], alive=True):
+    def __init__(self, name, movement, wealth, inventory = [], health=100, damage=10):
         self.name = name
         self.movement = movement
         self.wealth = wealth
         self.inventory = inventory
-        self.alive=alive
+        self.health = health
+        self.damage = damage
+
+    def change_health(self, health_change):
+        self.health += health_change
 
 
 class Npc(Person):
-    def __init__(self, name, dialog ,movement=1, wealth=0, gifts = [], activateItems=[], rewards = [], rewardDialog = []) :
+    def __init__(self, name, dialog ,movement=1, wealth=0, damage=50, gifts = [], activateItems=[], rewards = [], rewardDialog = []) :
         Person.__init__(self, name, movement, wealth)
         self.gifts = gifts
         self.activateItems = activateItems
@@ -17,6 +21,7 @@ class Npc(Person):
         self.dialogCounter = 0
         self.rewardDialog = rewardDialog
         self.rewardDialogCounter = 0
+        self.damage = damage
 
     def speak(self):
         print(self.name+':',self.dialog[self.dialogCounter])
@@ -240,7 +245,6 @@ class Turn():
 
         elif action[0:3] == 'use':
             itemName = action[4:]
-            print(itemName)
             for item in self.player.inventory:
                 if itemName == item.name:
                     item.use()
@@ -270,6 +274,21 @@ class Turn():
 
             newAction = input('Command: ')
             success = self.command(newAction, actor)
+
+        elif action[0:4] == 'fight':
+            print('you\'re trying to fight')
+            npc = action[5:]
+            for occupant in self.square.occupants:
+                if occupant.name == npc:
+                    print('Your health: ', self.player.health, ' Opponent\'s health: ', occupant.health)
+                    while(self.player.health>0 and occupant.health>0):
+                        occupant.change_health(self.player.damage)
+                        self.player.change_health(occupant.damage)
+                        print('Your health: ', self.player.health, ' Opponent\'s health: ', occupant.health)
+
+                    print('fight is done')
+
+
 
         elif action == 'exit':
             self.playGame = False

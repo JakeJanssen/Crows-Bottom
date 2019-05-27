@@ -5,7 +5,10 @@ player = Player('Colin')
 # init terrain
 world = Terrain(9,8)
 
+<<<<<<< HEAD
 # init things
+=======
+>>>>>>> 44c059027f2bdf715ee3b5b054744758c6e0bfca
 gold = Item('gold', 5, 0)
 bundle = Item('Carefully Wrapped Package',1,1)
 shovel = Item('shovel', 1, 1)
