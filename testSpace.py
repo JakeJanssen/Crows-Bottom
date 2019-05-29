@@ -4,8 +4,12 @@ player = Player('player', x=0, y=0)
 
 world = Terrain(5,5,'outdoors_1.mp3')
 
-rattler1 = Npc('Fearsome Rattler', ['hhsssss...'])
-rattler2 = Npc('Fearsome Rattler', ['hhsssss...'])
+gold1 = Item('gold', 5, 0)
+gold2 = Item('gold', 6, 0)
+
+
+rattler1 = Npc('Fearsome Rattler', ['hhsssss...'], itemsOnDeath=[gold1])
+rattler2 = Npc('Fearsome Rattler', ['hhsssss...'], itemsOnDeath=[gold2])
 
 bottle = Weapon('glass bottle', 73)
 topLeft = Square([0,0], 'ne')
@@ -16,7 +20,7 @@ center = Square([1,1], 'Oh fuck me... I think that\'s a rattler...', occupants=[
 middleRight = Square([1,2], 'You\'ve gotta be kidding me', occupants=[rattler2])
 bottomLeft = Square([2,0], 'ne')
 bottomMiddle = Square([2,1], 'e', items=[bottle])
-bottomRight = Square([2,2], 'se')
+bottomRight = Square([2,2], 'se', items=[bottle])
 
 #init world
 world.addSquare(topLeft)

@@ -1,6 +1,5 @@
 from items import Weapon, Armour
 
-
 class Person:
     def __init__(self, name, movement, wealth, inventory = [], health=100, damage=10, defense=0):
         self.name = name

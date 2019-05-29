@@ -91,11 +91,29 @@ class Turn():
             for item in self.square.items:
                 if itemName == item.name or takeAll:
                     if type(item) is Weapon:
-                        self.player.addWeapon(item)
-                        self.square.removeItem(item)
+                        new_wep = True
+                        for i in range(0,len(self.player.weapons)):
+                            if item.name == self.player.weapons[i].name:
+                                self.player.weapons[i].quantity += item.quantity
+                                self.square.removeItem(item)
+                                new_wep = False
+
+                        if new_wep:   
+                            self.player.addWeapon(item)
+                            self.square.removeItem(item)
+
+                        
                     else:
-                        self.player.addItem(item)
-                        self.square.removeItem(item)
+                        new_item = True
+                        for i in range(0,len(self.player.inventory)):
+                            if item.name == self.player.inventory[i].name:
+                                self.player.inventory[i].quantity += item.quantity
+                                self.square.removeItem(item)
+                                new_item = False
+
+                        if new_item:   
+                            self.player.addItem(item)
+                            self.square.removeItem(item)
 
         elif action[0:7] == 'talk to':
             npc = action[8:]
@@ -135,6 +153,13 @@ class Turn():
                     if(self.player.health>0):
                         print(npc, ' has been defeated.')
                         self.square.removeOccupants(occupant)
+                        droppedItems = occupant.dropOnDeath()
+                        if droppedItems:
+                            print("You find: ")
+                            for item in droppedItems:
+                                print(item.name)
+                                self.square.items.append(item)
+
                     else:
                         print('You have died.')
                         self.playGame = False
@@ -153,7 +178,7 @@ class Turn():
         elif action == 'weapons':
             print('___Weapons___')
             for weapon in self.player.weapons:
-                print(weapon.name)
+                print(weapon.name, 'x', weapon.quantity)
 
         elif action == 'stats':
             print('___Stats___')

@@ -1,7 +1,7 @@
 from player import Person
 
 class Npc(Person):
-    def __init__(self, name, dialog ,movement=1, wealth=0, damage=10, gifts = [], activateItems=[], rewards = [], rewardDialog = []) :
+    def __init__(self, name, dialog ,movement=1, wealth=0, damage=10, gifts = [], activateItems=[], rewards = [], rewardDialog = [], itemsOnDeath=[]) :
         Person.__init__(self, name, movement, wealth)
         self.gifts = gifts
         self.activateItems = activateItems
@@ -11,6 +11,7 @@ class Npc(Person):
         self.rewardDialog = rewardDialog
         self.rewardDialogCounter = 0
         self.damage = damage
+        self.itemsOnDeath = itemsOnDeath
 
     def speak(self):
         print(self.name+':',self.dialog[self.dialogCounter])
@@ -35,6 +36,9 @@ class Npc(Person):
                     self.rewards.remove(item)
                     gainedItems.append(item)
         return gainedItems, success
+
+    def dropOnDeath(self):
+        return self.itemsOnDeath
 
 class MovingNpc(Npc):
     def __init__(self, name, dialog, startingLoc = [], movementPattern=[], movement=1, wealth=0, gifts = [], activateItems=[], rewards = [], rewardDialog = []) :
