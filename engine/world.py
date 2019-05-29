@@ -35,7 +35,6 @@ class Square():
         self.occupants = occupants
         self.objects = objects
         self.barriers = barriers
-        self.audio = audio 
     
     def removeItem(self, item):
         self.items.remove(item)
