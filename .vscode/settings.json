@@ -1,0 +1,5 @@
+{
+    "python.linting.enabled": true,
+    "python.autoComplete.addBrackets": true,
+    "python.linting.pylintArgs": ["--errors-only", "--disable=E0401", "--disable=E0602"]
+}

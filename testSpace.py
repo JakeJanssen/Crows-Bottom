@@ -1,14 +1,11 @@
-from textGame import *
+from engine import *
 
 player = Player('player', x=0, y=0)
 
-#world = Terrain(5,5,'audio/test1.mp3')
-world = Terrain(5,5,'audio/outdoors_1.mp3')
-
+world = Terrain(5,5,'outdoors_1.mp3')
 
 rattler1 = Npc('Fearsome Rattler', ['hhsssss...'])
 rattler2 = Npc('Fearsome Rattler', ['hhsssss...'])
-
 
 bottle = Weapon('glass bottle', 73)
 topLeft = Square([0,0], 'ne')
@@ -20,9 +17,6 @@ middleRight = Square([1,2], 'You\'ve gotta be kidding me', occupants=[rattler2])
 bottomLeft = Square([2,0], 'ne')
 bottomMiddle = Square([2,1], 'e', items=[bottle])
 bottomRight = Square([2,2], 'se')
-
-
-
 
 #init world
 world.addSquare(topLeft)
