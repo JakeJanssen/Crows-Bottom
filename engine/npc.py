@@ -27,15 +27,18 @@ class Npc(Person):
     def activate(self, playerItem):
         gainedItems = []
         success = False
-        if playerItem in self.activateItems:
-            print(self.rewardDialog[self.rewardDialogCounter])
-            success = True
-            for item in self.rewards:
-                answer = input('Do you want ' + item.name + '?: ')
-                if answer == 'y':
-                    self.rewards.remove(item)
-                    gainedItems.append(item)
-        return gainedItems, success
+        # all(playerItem in ...)
+
+        for item in self.activateItems:
+            if playerItem.name == item.name and playerItem.quantity >= item.quantity:
+                print(self.rewardDialog[self.rewardDialogCounter])
+                success = True
+                for item in self.rewards:
+                    answer = input('Do you want ' + item.name + '?: ')
+                    if answer == 'y':
+                        self.rewards.remove(item)
+                        gainedItems.append(item)
+            return gainedItems, success
 
     def dropOnDeath(self):
         return self.itemsOnDeath

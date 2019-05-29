@@ -1,6 +1,16 @@
 from items import Weapon, Armour
 from player import Player
 
+import sys, os
+
+with open(os.devnull, 'w') as f:
+    # disable stdout
+    oldstdout = sys.stdout
+    sys.stdout = f
+    import pygame
+    # enable stdout
+    sys.stdout = oldstdout
+
 class Turn():
     def __init__(self, player, terrain, smartNpcs=[]):
         self.player = player
@@ -53,6 +63,7 @@ class Turn():
         elif 'use ' in action and ' on ' in action:
             itemName = action[4:action.find(' on ')]
             obLoc = action.find(' on ') + 4
+            # add something in so multiple items can be used 
             objectName = action[obLoc:]
             objGainedItems = []
             occGainedItems = []
@@ -88,32 +99,16 @@ class Turn():
             takeAll = False
             if itemName == 'all':
                 takeAll = True
+            
             for item in self.square.items:
                 if itemName == item.name or takeAll:
-                    if type(item) is Weapon:
-                        new_wep = True
-                        for i in range(0,len(self.player.weapons)):
-                            if item.name == self.player.weapons[i].name:
-                                self.player.weapons[i].quantity += item.quantity
-                                self.square.removeItem(item)
-                                new_wep = False
+                    '''if type(item) is Weapon:
+                        self.player.addWeapon(item)
+                        self.square.removeItem(item)
 
-                        if new_wep:   
-                            self.player.addWeapon(item)
-                            self.square.removeItem(item)
-
-                        
-                    else:
-                        new_item = True
-                        for i in range(0,len(self.player.inventory)):
-                            if item.name == self.player.inventory[i].name:
-                                self.player.inventory[i].quantity += item.quantity
-                                self.square.removeItem(item)
-                                new_item = False
-
-                        if new_item:   
-                            self.player.addItem(item)
-                            self.square.removeItem(item)
+                    else:'''
+                    self.player.addItem(item)
+                    self.square.removeItem(item)
 
         elif action[0:7] == 'talk to':
             npc = action[8:]
@@ -234,6 +229,21 @@ class Turn():
         action = input('Command: ')
         self.command(action, self.player)
         self.square = self.terrain.squares[self.player.x][self.player.y]
+
+        '''
+        print(self.square.audio)
+        if self.square.audio:
+            print('in here')
+            audio = sys.path[0][:-6] + '/audio/' + self.square.audio
+            pygame.mixer.music.load(audio)
+            pygame.mixer.music.play()
+
+            '
+            if self.terrain.audio_path:
+                audio_path = sys.path[0][:-6] + '/audio/' + self.terrain.audio_path
+                pygame.mixer.music.queue(audio_path)
+                pygame.mixer.music.play(-1)
+            '''
 
     def startGame(self):
         while self.playGame:

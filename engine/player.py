@@ -26,13 +26,38 @@ class Player(Person):
         self.equipArmour(clothes)
         
     def addItem(self,item):
-        self.inventory.append(item)
+        if type(item) is Weapon:
+            new_wep = True
+            for i in range(0,len(self.weapons)):
+                if item.name == self.weapons[i].name:
+                    self.weapons[i].quantity += item.quantity
+                    new_wep = False
 
+            if new_wep:   
+                self.weapons.append(item)
+        else:
+            new_item = True
+            for i in range(0,len(self.inventory)):
+                if item.name == self.inventory[i].name:
+                    self.inventory[i].quantity += item.quantity
+                    new_item = False
+
+            if new_item:   
+                self.inventory.append(item)
+
+    # need to make removes stackable 
     def removeItem(self, item):
         self.inventory.remove(item)
 
-    def addWeapon(self, weapon):
-        self.weapons.append(weapon)
+    def addWeapon(self, item):
+        new_wep = True
+        for i in range(0,len(self.weapons)):
+            if item.name == self.weapons[i].name:
+                self.weapons[i].quantity += item.quantity
+                new_wep = False
+
+        if new_wep:   
+            self.weapons.append(item)
 
     def removeWeapon(self, weapon):
         self.weapons.remove(weapon)

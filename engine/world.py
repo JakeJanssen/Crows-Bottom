@@ -34,7 +34,8 @@ class Square():
         self.description = description
         self.occupants = occupants
         self.objects = objects
-        self.barriers = barriers 
+        self.barriers = barriers
+        self.audio = audio 
     
     def removeItem(self, item):
         self.items.remove(item)
@@ -71,6 +72,7 @@ class Terrain:
         
         self.xSize = xSize
         self.ySize = ySize
+        self.audio_path = audio_path
 
         if audio_path:
             audio_path = sys.path[0][:-6] + '/audio/' + audio_path
