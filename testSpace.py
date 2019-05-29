@@ -2,7 +2,9 @@ from textGame import *
 
 player = Player('player', x=0, y=0)
 
-world = Terrain(5,5)
+#world = Terrain(5,5,'audio/test1.mp3')
+world = Terrain(5,5,'audio/outdoors_1.mp3')
+
 
 rattler1 = Npc('Fearsome Rattler', ['hhsssss...'])
 rattler2 = Npc('Fearsome Rattler', ['hhsssss...'])

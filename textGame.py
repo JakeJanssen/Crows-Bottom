@@ -1,3 +1,12 @@
+import sys, os
+with open(os.devnull, 'w') as f:
+    # disable stdout
+    oldstdout = sys.stdout
+    sys.stdout = f
+    import pygame
+    # enable stdout
+    sys.stdout = oldstdout
+
 class Person:
     def __init__(self, name, movement, wealth, inventory = [], health=100, damage=10, defense=0):
         self.name = name
@@ -178,7 +187,7 @@ class Square():
 
         
 class Terrain:
-    def __init__(self, xSize, ySize):
+    def __init__(self, xSize, ySize, audio_path = None):
         xSize += 2
         ySize += 2
         self.squares = [[Square([x,y],'You get the feeling you\'ve gone too far...',barriers='') for y in range(ySize)] for x in range(xSize)]
@@ -192,6 +201,11 @@ class Terrain:
         
         self.xSize = xSize
         self.ySize = ySize
+        
+        pygame.mixer.pre_init(44100, -16, 2, 2048) # setup mixer to avoid sound lag
+        pygame.mixer.init()
+        pygame.mixer.music.load(audio_path)
+        pygame.mixer.music.play(-1)
 
     def addSquare(self, square):
         self.squares[square.location[0]+1][square.location[1]+1] = square 
